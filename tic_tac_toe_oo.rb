@@ -42,13 +42,26 @@ def prompt_then_gets mssg
 end
 
 class Cell
+  include Comparable
+
   attr_accessor :mark
 
   def initialize
     self.mark = "  "
   end
 
+  def <=>(other_cell)
+    if self.mark == other_cell
+      return 0
+    end
+  end
+
 end
+
+# To implement Line class, you'll need to change the code in Board -- Board will need to be defined as Lines of Cells, so 8 lines
+class Line
+end
+
 
 class Board
 
@@ -173,7 +186,8 @@ class Game
 
   # Should return a bool
   # TODO: NEXT: code method to determine whether there is a winner.
-  def is_there_winner?
+  def is_there_winner?(board)
+    if board.cells[0]
     #####
   end
 
