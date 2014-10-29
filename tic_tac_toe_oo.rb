@@ -75,7 +75,7 @@ class Board
     end
   end
 
-  def board_is_filled?
+      def is_filled?
     empty_cells = self.cells.select do |cell|
                     cell.mark == " "
                   end
@@ -96,11 +96,12 @@ class Board
 end
 
 class Player
-  attr_accessor :sym, :ai
+  attr_accessor :sym, :ai, :name
 
-  def initialize(sym)
+  def initialize(sym, name)
     self.sym = sym
     self.ai = false
+    self.name = name
   end
 
   # Mark a cell directly on the board
@@ -111,7 +112,7 @@ class Player
       # Is computer, let computer pick random cell
       # Computer picks square until comp picks an emtpy square
         begin
-          cell_num = [1,2,3,4,5,6,7,8,9].sample
+          cell_num = [0,1,2,3,4,5,6,7,8].sample
         end until board.cells[cell_num].mark == "  "
 
         board.cells[cell_num].mark = player_sym
@@ -133,63 +134,109 @@ class Player
 end
 
 class Game
+  def is_there_winner?(board)
+        # Horizontal wins
+    if  (board.cells[0].mark == board.cells[1].mark and board.cells[1].mark == board.cells[2]) or
+        (board.cells[3].mark == board.cells[4].mark and board.cells[4].mark == board.cells[5]) or
+        (board.cells[6].mark == board.cells[7].mark and board.cells[7].mark == board.cells[8]) or
+
+        # Vertical wins
+        (board.cells[0].mark == board.cells[3].mark and board.cells[3].mark == board.cells[6]) or
+        (board.cells[1].mark == board.cells[4].mark and board.cells[4].mark == board.cells[7]) or
+        (board.cells[2].mark == board.cells[5].mark and board.cells[5].mark == board.cells[8]) or
+
+        (board.cells[0].mark == board.cells[4].mark and board.cells[4].mark == board.cells[8]) or
+        (board.cells[6].mark == board.cells[4].mark and board.cells[4].mark == board.cells[2])
+        ## End condition
+
+        true
+    else
+        false
+    end
+  end
+
+  # Returns string of who won
+  def find_winner(board)
+    xs = board.cells.select do |cell|
+          cell.mark = "x"
+        end
+
+    num_x = xs.size
+
+    os = board.cells.select do |cell|
+          cell.mark = "o"
+        end
+
+    num_o = os.size
+
+    # If X wins, there will be more x's on the board, since x always goes first
+    if num_x > num_o
+      return "player_x"
+    else
+      return "player_o"
+    end
+  end
+
   def run
-    player_x = Player.new "X"
-    player_o = Player.new "O"
-    board = Board.new
 
     system 'clear'
     puts "Welcome to Tic Tac Toe!"
 
+    user_name = prompt_then_gets "What's your name?"
+    user_name.capitalize!
+    puts
+
     # Let User choose a symbol
     acceptable_input = %w(x o)
     input = nil
-    input = prompt_then_gets "Choose your symbol, \"X\" or \"O\".\n\"X\" goes first." until acceptable_input.include?(input)
+    input = (prompt_then_gets "Choose your symbol, \"X\" or \"O\".\n\"X\" goes first.") until acceptable_input.include?(input)
 
 
-    # Set chosen symbols
-    input == "x" ? (user, comp = player_x, player_o) : (user, comp = player_o, player_x)
-
-    comp.ai = true
-
+    if input == "x"
+      player_x = Player.new "X", user_name
+      player_o = Player.new "O", "Computer"
+      player_o.ai = true
+      board = Board.new
+    else
+      player_x = Player.new "X", "Computer"
+      player_x.ai = true
+      player_o = Player.new "O", user_name
+      board = Board.new
+    end
 
     begin
       begin
 
         board.draw_board
-
         board = player_x.mark_cell(board, player_x.sym)
 
         board.draw_board
         board = player_o.mark_cell(board, player_o.sym)
         board.draw_board
 
-      end until board.board_is_filled? == true or is_there_winner? == true
+      end until board.is_filled? == true or is_there_winner?(board) == true
 
-      if is_there_winner?
+      winner = find_winner(board)
+      winner == "player_x" ? (winner = player_x.name) : (winner = player_o.name)
+
+      if is_there_winner?(board)
         puts "#{winner} wins the game!"
-      else
+      elsif !board.is_filled?
         # Board filled but no winner, so tie.
         puts "There is no winner and no possible moves. The game is a tie."
       end
 
       acceptable_input = ["q", ""]
-      input = prompt_then_gets "Press enter to play again or \"q\" to quit." until
-      input == "q" ? (user_wants_to_quit = true) : (user_wants_to_quit = false)
+      input = prompt_then_gets("Press enter to play again or \"q\" to quit.") until acceptable_input.include?(input)
+
+      user_wants_to_quit = true if input == "q"
+
 
     end until user_wants_to_quit == true
 
-    # TODO: Output who won
-    # TODO: Ask whether player wants to play again.
 
   end
 
-  # Should return a bool
-  # TODO: NEXT: code method to determine whether there is a winner.
-  def is_there_winner?(board)
-    if board.cells[0]
-    #####
-  end
 
 end
 
