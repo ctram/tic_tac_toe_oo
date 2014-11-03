@@ -12,6 +12,8 @@
     - Check for empty squares
 
 =end
+
+# TODO: Program complete - run errors.
 require 'pry'
 
 class Square
@@ -28,7 +30,7 @@ class Board
   # @sqaures =
 
   def initialize
-    self.squares = Hash.new(0)
+    self.squares = Hash.new
     (1..9).each do |num|
       self.squares[num] = Square.new    # Create hash with nine EMPTY squares
     end
@@ -73,16 +75,16 @@ class Game
       bool_there_is_winner = true
       winner = find_winner(board)
     end
-    bool_board_is_full = board_is_full?
+    bool_board_is_full = board_is_full?(board)
     return bool_there_is_winner, winner, bool_board_is_full
   end
 
   def mark_square player, board, square_location
     # Check if this is the comp, if so, let the comp
     # FIXME: how to test that player is the same as player_x? player_x is class Player.
-    player == player_x ? sym = "X" : sym = "O"
+    player.shape == "X" ? sym = "X" : sym = "O"
 
-    self.board.squares[square_location].mark = sym
+    self.board.squares[square_location.to_i].mark = sym
   end
 
   def find_winner board
@@ -189,6 +191,7 @@ class Game
 
           draw_board
           until acceptable_input.include? square_location and self.board.squares[square_location.to_i].mark == " "
+            binding.pry
             puts "Pick a square (1 - 9)"
             square_location = gets.chomp
             # ###binding.pry
@@ -198,8 +201,10 @@ class Game
           bool_there_is_winner, winner, bool_board_is_full = check_for_winner_and_full_board(board)
 
           # Comp goes
-          square_location = ""
-          until self.board.squares[square_location].mark == " "
+          square_location = 0
+            binding.pry
+          until self.board.squares[square_location.to_i].mark == " "
+            binding.pry
             square_location = acceptable_input.sample
           end
           mark_square(player_o, self.board, square_location)
@@ -209,8 +214,8 @@ class Game
 
         else
           # Comp goes first, randomly picks a square
-          square_location = ""
-          until self.board.squares[square_location].mark == " "
+          square_location = 0
+          until self.board.squares[square_location.to_i].mark == " "
             square_location = acceptable_input.sample
           end
           mark_square(player_x, self.board, square_location)
@@ -220,8 +225,8 @@ class Game
 
           # User goes
           acceptable_input = %w(1 2 3 4 5 6 7 8 9)
-          square_location = ""
-          until acceptable_input.include? square_location and self.board.squares[square_location].mark == " "
+          square_location = 0
+          until acceptable_input.include? square_location and self.board.squares[square_location.to_i].mark == " "
             puts "Pick a square (1 - 9)"
             square_location = gets.chomp
           end
