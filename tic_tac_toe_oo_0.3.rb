@@ -6,7 +6,7 @@ class Board
   def initialize
     self.squares = Hash.new
     (1..9).each do |i|
-      self.squares[i] = " "
+      self.squares[i] = " "   # All squares are initially empty/single space.
     end
   end
 end
@@ -38,7 +38,7 @@ class Game
 
   end
 
-  def comp_picks_square comp
+  def comp_picks_square comp  # TODO: do you need to pass in "comp" here? Shouldn't comp be available outside of this method? You must not, since you did not pass player_x into this method yet you compare comp to it on line 43.
     # Determine what shape the comp is
     comp == player_x ? comp_sym = "X" : comp_sym = "O"
 
@@ -49,9 +49,10 @@ class Game
 
     # Comp marks the square
     self.board.squares[comps_choice] = comp_sym
-    ##binding.pry
+    ###
   end
 
+  # TODO: do you need to pass user into this method?
   def user_picks_square user
     begin
       puts "Pick a square to mark (1-9):"
@@ -62,7 +63,7 @@ class Game
     user == player_x ? user_sym = "X" : user_sym = "O"
 
     self.board.squares[users_choice] = user_sym
-    ###binding.pry
+    ####
   end
 
   def find_winner
@@ -93,12 +94,11 @@ class Game
         v == "X" ? num_xs += 1 : nil
         v == "O" ? num_os += 1 : nil
       end
-      ##binding.pry
+      ###
+        #
 
-      num_xs > num_os ? (return  player_x) : (return  player_o)
-
+      num_xs > num_os ? (return  self.player_x) : (return  self.player_o)
     end
-
   end
 
   def is_board_full?
@@ -108,7 +108,7 @@ class Game
         empty_squares += 1
       end
     end
-    #binding.pry
+    ##
     empty_squares == 0 ? (return true ): (return false)
   end
 
@@ -122,7 +122,11 @@ class Game
     comp = Player.new("Comp")
 
     begin
+      bool_has_winner = false
+      bool_board_full = false
+      winner = nil
       self.board = Board.new
+
       acceptable_input = %w( x o )
       input = nil
       system 'clear'
@@ -134,42 +138,41 @@ class Game
       # Set shapes players have chosen.
       input == "x" ? (self.player_x = user; self.player_o = comp) : (self.player_x = comp; self.player_o = user)
 
+      # XXX: so far so good --
+      check_for_winner_and_full_board = lambda do
+        draw_board()
+        #
+        find_winner() == nil ? bool_has_winner = false : bool_has_winner = true
+        bool_has_winner == true ? (winner = find_winner()) : nil
+        is_board_full?() == true ? (bool_board_full = true) : nil
+      end
 
       begin
           draw_board()
         if user == player_x
           user_picks_square(user)
-          draw_board()
-          find_winner() == nil ? nil : bool_has_winner = true
-          bool_has_winner == true ? (winner = find_winner(); break) : nil
-          is_board_full?() == true ? (bool_board_full = true; break) : nil
+          check_for_winner_and_full_board.call
+          bool_has_winner ? break : nil
+          bool_board_full ? break : nil
 
           comp_picks_square(comp)
-          draw_board()
-          find_winner() == nil ? nil : bool_has_winner = true
-          bool_has_winner == true ? (winner = find_winner(); break) : nil
-          is_board_full?() == true ? (bool_board_full = true; break) : nil
-          ###binding.pry
-
         else
           comp_picks_square(comp)
-          draw_board()
-          find_winner() == nil ? nil : bool_has_winner = true
-          bool_has_winner == true ? (winner = find_winner(); break) : nil
-          is_board_full?() == true ? (bool_board_full = true; break) : nil
+          check_for_winner_and_full_board.call
+          bool_has_winner ? break : nil
+          bool_board_full ? break : nil
 
           user_picks_square(user)
-          draw_board()
-          find_winner() == nil ? nil : bool_has_winner = true
-          bool_has_winner == true ? (winner = find_winner(); break) : nil
-          is_board_full?() == true ? (bool_board_full = true; break) : nil
         end
+          check_for_winner_and_full_board.call
+          bool_has_winner ? break : nil
+          bool_board_full ? break : nil
       end until bool_has_winner or bool_board_full
 
-      #binding.pry
+      ##
       if bool_has_winner
         winner == user ? winner_name = user.name : winner_name = comp.name
-        ##binding.pry
+        ###
         puts "#{winner_name} wins!"
       else
         puts "The board is full. It's a tie!"
@@ -183,7 +186,6 @@ class Game
       bool_board_full = false
     end until bool_user_wants_quit == true
   end
-
 end
 
 game = Game.new
