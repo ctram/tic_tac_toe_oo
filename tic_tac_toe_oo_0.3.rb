@@ -1,4 +1,3 @@
-require 'pry'
 
 class Board
   attr_accessor :squares
@@ -38,8 +37,7 @@ class Game
 
   end
 
-  def comp_picks_square comp  # TODO: do you need to pass in "comp" here? Shouldn't comp be available outside of this method? You must not, since you did not pass player_x into this method yet you compare comp to it on line 43.
-    # Determine what shape the comp is
+  def comp_picks_square comp
     comp == player_x ? comp_sym = "X" : comp_sym = "O"
 
     # Comp randomly picks a square
@@ -49,10 +47,8 @@ class Game
 
     # Comp marks the square
     self.board.squares[comps_choice] = comp_sym
-    ###
   end
 
-  # TODO: do you need to pass user into this method?
   def user_picks_square user
     begin
       puts "Pick a square to mark (1-9):"
@@ -63,7 +59,6 @@ class Game
     user == player_x ? user_sym = "X" : user_sym = "O"
 
     self.board.squares[users_choice] = user_sym
-    ####
   end
 
   def find_winner
@@ -94,8 +89,6 @@ class Game
         v == "X" ? num_xs += 1 : nil
         v == "O" ? num_os += 1 : nil
       end
-      ###
-        #
 
       num_xs > num_os ? (return  self.player_x) : (return  self.player_o)
     end
@@ -108,7 +101,6 @@ class Game
         empty_squares += 1
       end
     end
-    ##
     empty_squares == 0 ? (return true ): (return false)
   end
 
@@ -138,10 +130,9 @@ class Game
       # Set shapes players have chosen.
       input == "x" ? (self.player_x = user; self.player_o = comp) : (self.player_x = comp; self.player_o = user)
 
-      # XXX: so far so good --
       check_for_winner_and_full_board = lambda do
         draw_board()
-        #
+
         find_winner() == nil ? bool_has_winner = false : bool_has_winner = true
         bool_has_winner == true ? (winner = find_winner()) : nil
         is_board_full?() == true ? (bool_board_full = true) : nil
@@ -169,10 +160,9 @@ class Game
           bool_board_full ? break : nil
       end until bool_has_winner or bool_board_full
 
-      ##
       if bool_has_winner
         winner == user ? winner_name = user.name : winner_name = comp.name
-        ###
+
         puts "#{winner_name} wins!"
       else
         puts "The board is full. It's a tie!"
