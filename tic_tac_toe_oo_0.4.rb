@@ -5,9 +5,28 @@ class Board
   def initialize
     self.squares = Hash.new
     (1..9).each do |i|
-      self.squares[i] = " "   # All squares are initially empty/single space.
+      squares[i] = " "   # All squares are initially empty/single space.
     end
   end
+
+  def mark_square(choice, sym)
+    squares[choice] = sym
+  end
+
+  def square_is_empty?(choice)
+    squares[choice] == " " ? (return true) : (return false)
+  end
+
+  def is_board_full?
+    empty_squares = 0
+    squares.each do |k,v|
+      if v == " "
+        empty_squares += 1
+      end
+    end
+    empty_squares == 0 ? (return true ): (return false)
+  end
+
 end
 
 class Player
@@ -20,6 +39,12 @@ end
 
 class Game
   attr_accessor :board, :player_x, :player_o
+
+  WINNING_LINES = [
+                    [1,2,3], [4,5,6], [7,8,9],  # Horizontal
+                    [7,4,1], [8,5,2], [9,6,3],   # Vertical
+                    [7,5,3], [9,5,1]            # Diagonal
+  ]
 
   def initialize
     self.board = Board.new
@@ -43,10 +68,10 @@ class Game
     # Comp randomly picks a square
     begin
       comps_choice = %w(1 2 3 4 5 6 7 8 9).sample.to_i
-    end until self.board.squares[comps_choice] == " "
+    end until board.squares[comps_choice] == " "
 
     # Comp marks the square
-    self.board.squares[comps_choice] = comp_sym
+    board.mark_square(comps_choice, comp_sym)
   end
 
   def user_picks_square user
@@ -54,54 +79,39 @@ class Game
       puts "Pick a square to mark (1-9):"
       print ">>"
       users_choice = gets.chomp.to_i
-    end until self.board.squares[users_choice] == " "
+    end until board.squares[users_choice] == " "
 
     user == player_x ? user_sym = "X" : user_sym = "O"
 
-    self.board.squares[users_choice] = user_sym
+    board.mark_square(users_choice, user_sym)
   end
 
   def find_winner
-    s = self.board.squares
 
-    if  (
-        # Horizontal wins
-        (s[1] == s[2] and s[2] == s[3] and s[3] != " ") or
-        (s[4] == s[5] and s[5] == s[6] and s[6] != " ") or
-        (s[7] == s[8] and s[8] == s[9] and s[9] != " ") or
+    marked_squares_same_sym = 0
 
-        # Vertical wins
-        (s[1] == s[4] and s[4] ==s[7] and s[7] != " ") or
-        (s[2] == s[5] and s[5] == s[8] and s[8] != " ") or
-        (s[3] == s[6] and s[6] == s[9] and s[9] != " ") or
+    WINNING_LINES.each do |line|
+      board.squares[line[0]] != " " ? sym = board.squares[line[0]] : next
+      marked_squares_same_sym = 0
+      line.each do |square|
+        board.squares[square] == sym ? marked_squares_same_sym += 1 : nil
+      end
+      marked_squares_same_sym == 3 ? break : nil
+    end
 
-        # Diagonal wins
-        (s[1] == s[5] and s[5] == s[9] and s[9] != " ") or
-        (s[3] == s[5] and s[5] == s[7] and s[7] != " ")
-                                                                )
-
+    if marked_squares_same_sym == 3
       # There is a winner, deteminer who it is.
       # If X won, then there will be more X's on the board, since X goes first and will always be ahead one move on his win.
       num_xs = 0
       num_os = 0
 
-      self.board.squares.each do |k,v|  # squares is a HASH
+      board.squares.each do |k,v|  # squares is a HASH
         v == "X" ? num_xs += 1 : nil
         v == "O" ? num_os += 1 : nil
       end
 
-      num_xs > num_os ? (return  self.player_x) : (return  self.player_o)
+      num_xs > num_os ? (return player_x) : (return player_o)
     end
-  end
-
-  def is_board_full?
-    empty_squares = 0
-    self.board.squares.each do |k,v|
-      if v == " "
-        empty_squares += 1
-      end
-    end
-    empty_squares == 0 ? (return true ): (return false)
   end
 
   def run
@@ -128,14 +138,14 @@ class Game
       end
 
       # Set shapes players have chosen.
-      input == "x" ? (self.player_x = user; self.player_o = comp) : (self.player_x = comp; self.player_o = user)
+      input == "x" ? (self.player_x, self.player_o = user, comp) : (self.player_x, self.player_o = comp, user)
 
       check_for_winner_and_full_board = lambda do
         draw_board()
 
         find_winner() == nil ? bool_has_winner = false : bool_has_winner = true
         bool_has_winner == true ? (winner = find_winner()) : nil
-        is_board_full?() == true ? (bool_board_full = true) : nil
+        board.is_board_full?() == true ? (bool_board_full = true) : nil
       end
 
       begin
